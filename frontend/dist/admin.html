@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentinelAI — Admin User Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/assets/admin-_4BMl-Q-.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/session-Do1mqGv5.js">
+  <link rel="modulepreload" crossorigin href="/assets/behavioralSensor-8T5HRU7S.js">
+  <link rel="stylesheet" crossorigin href="/assets/session-BcIM5nY6.css">
+</head>
+<body class="bg-[#060913] text-slate-100 font-sans min-h-screen overflow-x-hidden">
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 bg-[#060913]/90 backdrop-blur-lg border-b border-cyan-500/15">
+    <div class="max-w-screen-2xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-[0_0_18px_rgba(0,242,254,0.45)] font-black text-gray-900 text-sm font-mono">S</div>
+        <div>
+          <h1 class="font-display text-base font-bold tracking-[3px] uppercase bg-gradient-to-r from-white to-cyan-400 bg-clip-text text-transparent">SentinelAI</h1>
+          <p class="font-mono text-[10px] text-slate-500 tracking-widest">ADMIN · USER ENROLMENT</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="goDashboard()" class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 font-mono text-[11px] text-slate-300 hover:border-cyan-500/30 hover:text-cyan-400 transition-all">← Dashboard</button>
+        <button onclick="doLogout()" class="px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 font-mono text-[11px] text-red-400 hover:bg-red-500/20 transition-all">⏻ LOGOUT</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-screen-2xl mx-auto px-6 py-6 pb-16">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+      <!-- LEFT: Webcam for face capture -->
+      <div class="glass-card">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/8">
+          <h2 class="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-widest text-white"><span class="text-cyan-400">👁</span> Face Capture Sensor</h2>
+          <span id="hudStatusText" class="font-mono text-[11px] text-cyan-400 animate-pulse">INITIALIZING...</span>
+        </div>
+        <div class="relative aspect-[4/3] bg-[#020617] rounded-lg overflow-hidden border border-cyan-500/25">
+          <video id="webcamVideo" autoplay muted playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
+          <canvas id="hudCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+          <div class="hud-scan-line pointer-events-none"></div>
+          <div class="absolute top-2 left-2 right-2 flex justify-between pointer-events-none">
+            <div class="bg-black/60 px-2 py-1 rounded font-mono text-[10px] text-cyan-400 border border-cyan-500/30"><span id="faceStatusLabel">SCANNING FOR FACE...</span></div>
+            <div class="bg-black/60 px-2 py-1 rounded font-mono text-[10px] text-emerald-400 border border-emerald-500/30"><span id="irisStatusLabel">IRIS: SEARCHING</span></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center"><div class="font-mono text-[10px] text-slate-500 uppercase mb-1">Face</div><div id="telemFaceConf" class="font-mono text-sm font-bold text-cyan-400">0.0%</div></div>
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center"><div class="font-mono text-[10px] text-slate-500 uppercase mb-1">Iris</div><div id="telemIrisStatus" class="font-mono text-sm font-bold text-emerald-400">SEARCHING</div></div>
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center"><div class="font-mono text-[10px] text-slate-500 uppercase mb-1">Liveness</div><div id="telemLiveness" class="font-mono text-sm font-bold text-blue-400">0%</div></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Registration form -->
+      <div class="glass-card flex flex-col">
+        <div class="mb-5 pb-4 border-b border-white/8">
+          <h2 class="font-display text-lg font-bold text-white">🧑‍💼 Register New User</h2>
+          <p class="text-xs text-slate-500 mt-1">Enrol a user's details, home location (geo-fence baseline) and face photo. Only administrators can access this page.</p>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Email Address</label>
+          <input id="regEmail" type="email" placeholder="new@enterprise.io" class="input-field" />
+        </div>
+        <div class="mb-3">
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Full Name</label>
+          <input id="regName" type="text" placeholder="John Doe" class="input-field" />
+        </div>
+        <div class="mb-3">
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
+          <input id="regPassword" type="password" placeholder="Strong password" class="input-field" />
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Home City / Address</label>
+            <input id="regCity" type="text" placeholder="San Francisco, CA" class="input-field" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Role</label>
+            <select id="regRole" class="input-field">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Registered Location (geo-fence baseline)</label>
+          <div class="flex gap-2">
+            <input id="regCoords" type="text" readonly placeholder="Lat, Lng resolved via HERE Maps" class="input-field flex-1 font-mono text-[11px] text-cyan-300 cursor-default" />
+            <button type="button" onclick="geocodeRegCity()" class="px-3 py-2 rounded-lg bg-white/5 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 font-mono text-[11px] whitespace-nowrap transition-all">🗺️ Geocode</button>
+            <button type="button" onclick="useMyLocationForReg()" class="px-3 py-2 rounded-lg bg-white/5 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-mono text-[11px] whitespace-nowrap transition-all">📍 Use Mine</button>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Face Photo (upload or capture)</label>
+          <div class="flex items-center gap-3">
+            <div class="w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-cyan-500/25 bg-[#02060f] flex items-center justify-center">
+              <img id="regPhotoPreview" class="w-full h-full object-cover hidden" alt="Enrolment preview" />
+              <span id="regPhotoPlaceholder" class="font-mono text-[9px] text-slate-600 text-center px-1">NO PHOTO</span>
+            </div>
+            <div class="flex-1 space-y-2">
+              <input id="regPhoto" type="file" accept="image/*" onchange="onRegPhotoSelected(event)" class="block w-full text-[11px] text-slate-400 file:mr-2 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-cyan-500/15 file:text-cyan-300 file:font-mono file:text-[11px] file:cursor-pointer hover:file:bg-cyan-500/25" />
+              <button type="button" onclick="captureRegPhoto()" class="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-slate-300 hover:border-cyan-500/30 hover:text-cyan-400 font-mono text-[11px] transition-all">📸 Capture from webcam</button>
+            </div>
+          </div>
+        </div>
+
+        <button id="btnRegister" onclick="handleRegister()"
+          class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-gray-900 font-display font-bold text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(0,242,254,0.35)] hover:shadow-[0_0_30px_rgba(0,242,254,0.55)] transition-all">
+          📋 REGISTER & ENROLL FACIAL BIOMETRIC
+        </button>
+
+        <div id="regResult" class="hidden mt-4 rounded-xl p-4 border"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-[300] flex flex-col gap-2"></div>
+
+</body>
+</html>

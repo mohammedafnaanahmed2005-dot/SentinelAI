@@ -1,0 +1,18 @@
+{
+  "name": "sentinel-ai",
+  "version": "2.0.0",
+  "description": "SentinelAI Adaptive Facial Authentication System",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5173"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "autoprefixer": "^10.4.20",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.2",
+    "vite": "^6.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentinelAI — Redirecting…</title>
+  <!-- Landing page simply forwards to the dedicated sign-in page. -->
+  <meta http-equiv="refresh" content="0; url=/signin.html" />
+  <script>
+    // If an authenticated session already exists, go straight to the dashboard.
+    try {
+      var s = localStorage.getItem('sentinel_session');
+      window.location.replace(s ? '/dashboard.html' : '/signin.html');
+    } catch (e) {
+      window.location.replace('/signin.html');
+    }
+  </script>
+</head>
+<body style="background:#060913;color:#67e8f9;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+  Redirecting to SentinelAI Sign-In…
+</body>
+</html>

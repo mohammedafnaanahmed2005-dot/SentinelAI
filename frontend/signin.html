@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentinelAI — Secure Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="bg-[#060913] text-slate-100 font-sans min-h-screen overflow-x-hidden">
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 bg-[#060913]/90 backdrop-blur-lg border-b border-cyan-500/15">
+    <div class="max-w-screen-2xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-[0_0_18px_rgba(0,242,254,0.45)] font-black text-gray-900 text-sm font-mono">S</div>
+        <div>
+          <h1 class="font-display text-base font-bold tracking-[3px] uppercase bg-gradient-to-r from-white to-cyan-400 bg-clip-text text-transparent">SentinelAI</h1>
+          <p class="font-mono text-[10px] text-slate-500 tracking-widest">ADAPTIVE BIOMETRIC AUTH v2.0</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-mono text-[11px] text-emerald-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)] animate-pulse"></span>
+          SPU ACTIVE
+        </div>
+        <div id="currentTimeChip" class="px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 font-mono text-[11px] text-cyan-400"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- DEMO QUICK-FILL BAR -->
+  <div class="bg-[#0b1222] border-b border-white/5 px-6 py-2 flex items-center justify-between text-xs">
+    <span class="font-mono text-cyan-400 font-semibold flex items-center gap-2">⚡ DEMO QUICK-FILL</span>
+    <div class="flex gap-2">
+      <button onclick="demoFill('admin')" class="px-3 py-1 rounded bg-white/5 border border-white/10 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 font-mono text-[11px] transition-all">Admin (Low Risk)</button>
+      <button onclick="demoFill('normal')" class="px-3 py-1 rounded bg-white/5 border border-red-500/30 text-red-400 hover:border-red-500/60 font-mono text-[11px] transition-all">Unregistered → BLOCKED</button>
+      <button onclick="demoFill('geo_anomaly')" class="px-3 py-1 rounded bg-white/5 border border-red-500/30 text-red-400 hover:border-red-500/60 font-mono text-[11px] transition-all">Foreign Geo → BLOCKED</button>
+      <button onclick="demoFill('intruder')" class="px-3 py-1 rounded bg-white/5 border border-red-500/30 text-red-400 hover:border-red-500/60 font-mono text-[11px] transition-all">Intruder → BLOCKED</button>
+    </div>
+  </div>
+
+  <main class="max-w-screen-2xl mx-auto px-6 py-6 pb-16">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+      <!-- LEFT: Optical Sensor / Webcam HUD -->
+      <div class="glass-card">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/8">
+          <h2 class="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-widest text-white">
+            <span class="text-cyan-400">👁</span> Facial Verification Sensor
+          </h2>
+          <span id="hudStatusText" class="font-mono text-[11px] text-cyan-400 animate-pulse">INITIALIZING OPTICAL SENSOR...</span>
+        </div>
+
+        <div class="relative aspect-[4/3] bg-[#020617] rounded-lg overflow-hidden border border-cyan-500/25 shadow-[inset_0_0_30px_rgba(0,242,254,0.08)]">
+          <video id="webcamVideo" autoplay muted playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
+          <canvas id="hudCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+          <div class="hud-scan-line pointer-events-none"></div>
+          <div class="absolute top-2 left-2 right-2 flex justify-between pointer-events-none">
+            <div class="bg-black/60 backdrop-blur-sm px-2 py-1 rounded font-mono text-[10px] text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span id="faceStatusLabel">SCANNING FOR FACE...</span>
+            </div>
+            <div class="bg-black/60 backdrop-blur-sm px-2 py-1 rounded font-mono text-[10px] text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="irisStatusLabel">IRIS: SEARCHING</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 mt-3">
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center">
+            <div class="font-mono text-[10px] text-slate-500 uppercase mb-1">Face Conf</div>
+            <div id="telemFaceConf" class="font-mono text-sm font-bold text-cyan-400">0.0%</div>
+          </div>
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center">
+            <div class="font-mono text-[10px] text-slate-500 uppercase mb-1">Iris Track</div>
+            <div id="telemIrisStatus" class="font-mono text-sm font-bold text-emerald-400">SEARCHING</div>
+          </div>
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center">
+            <div class="font-mono text-[10px] text-slate-500 uppercase mb-1">Liveness</div>
+            <div id="telemLiveness" class="font-mono text-sm font-bold text-blue-400">0%</div>
+          </div>
+          <div class="bg-white/[0.03] border border-white/8 rounded-lg p-2.5 text-center">
+            <div class="font-mono text-[10px] text-slate-500 uppercase mb-1">SPU State</div>
+            <div id="telemSpuState" class="font-mono text-sm font-bold text-purple-400">ISOLATED</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          <div class="bg-white/[0.02] border border-white/8 rounded-lg p-3">
+            <div class="font-mono text-[10px] text-slate-500 flex items-center gap-1 mb-1">📍 Detected Location</div>
+            <div id="sensorLocation" class="font-mono text-xs font-semibold text-slate-200">Acquiring GPS...</div>
+          </div>
+          <div class="bg-white/[0.02] border border-white/8 rounded-lg p-3">
+            <div class="font-mono text-[10px] text-slate-500 flex items-center gap-1 mb-1">🕐 Local Time (Session)</div>
+            <div id="sensorTime" class="font-mono text-xs font-semibold text-slate-200">--:--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sign In Form -->
+      <div class="glass-card flex flex-col">
+        <div class="mb-5 pb-4 border-b border-white/8">
+          <h2 class="font-display text-lg font-bold text-white">🔐 User Sign In</h2>
+          <p class="text-xs text-slate-500 mt-1">Verify your face, then enter your credentials. Keystroke dynamics and location are analysed adaptively.</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Email Address</label>
+          <input id="authEmail" type="email" placeholder="user@enterprise.io"
+            class="w-full px-3.5 py-2.5 bg-[#02060f]/70 border border-white/10 rounded-lg text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,242,254,0.2)] transition-all font-mono" />
+        </div>
+
+        <div class="mb-3">
+          <label class="flex justify-between text-xs font-medium text-slate-400 mb-1.5">
+            <span>Password</span>
+            <span class="text-slate-600 font-mono text-[10px]">Keystroke dynamics active</span>
+          </label>
+          <input id="authPassword" type="password" placeholder="Enter secure password"
+            class="w-full px-3.5 py-2.5 bg-[#02060f]/70 border border-white/10 rounded-lg text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,242,254,0.2)] transition-all font-mono" />
+        </div>
+
+        <div class="bg-black/30 border border-cyan-500/15 rounded-lg p-3 mb-4">
+          <div class="flex justify-between items-center text-[11px] font-mono text-slate-500 mb-1">
+            <span class="text-cyan-400 font-semibold">⌨ KEYSTROKE DYNAMICS ENGINE</span>
+            <span id="hudTypingSpeed" class="text-cyan-300">0.0 chars/s</span>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-slate-600 mb-2">
+            <span>Duration</span>
+            <span id="hudTypingTime">0.0s / Max 7.5s</span>
+          </div>
+          <div class="w-full h-1.5 bg-white/8 rounded-full overflow-hidden">
+            <div id="hudTypingBar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-150" style="width:0%"></div>
+          </div>
+          <div id="hudTypingWarn" class="hidden mt-2 text-[10px] font-mono text-red-400 font-bold"></div>
+        </div>
+
+        <button id="btnSubmitAuth" onclick="handleSignIn()"
+          class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-gray-900 font-display font-bold text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(0,242,254,0.35)] hover:shadow-[0_0_30px_rgba(0,242,254,0.55)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 mt-auto">
+          <span>🔐</span>
+          <span id="btnAuthLabel">VERIFY FACE & SIGN IN</span>
+        </button>
+
+        <p class="text-center text-[11px] text-slate-500 mt-3">New user? Registration is performed by an administrator.</p>
+
+        <div id="assessmentCard" class="hidden mt-4 rounded-xl p-4 border transition-all"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- OTP / MFA MODAL -->
+  <div id="otpModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden items-center justify-center z-[200]">
+    <div class="bg-[#0b1120] border border-cyan-500/40 rounded-2xl w-full max-w-md p-8 shadow-[0_0_50px_rgba(0,242,254,0.2)]">
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/8">
+        <div class="flex items-center gap-2 font-display text-lg font-bold text-cyan-400">🔑 Step-Up MFA</div>
+        <span class="otp-badge font-mono text-[10px] text-slate-500 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 text-amber-400">STEP-UP VERIFICATION</span>
+      </div>
+      <p class="text-sm text-slate-400 mb-2">A 6-digit OTP has been issued. Enter it below to complete authentication.</p>
+      <div id="otpChannelInfo" class="bg-cyan-500/10 border border-cyan-500/25 rounded-lg p-3 mb-5 font-mono text-center text-cyan-300 text-[11px] leading-relaxed">
+        A 6-digit OTP has been sent to your registered secure channel. For security, the code is never displayed on screen.
+      </div>
+      <label class="block text-xs font-medium text-slate-400 mb-3">Enter 6-Digit OTP Code</label>
+      <div class="flex justify-between gap-2 mb-6">
+        <input id="otp1" type="text" maxlength="1" class="otp-digit" />
+        <input id="otp2" type="text" maxlength="1" class="otp-digit" />
+        <input id="otp3" type="text" maxlength="1" class="otp-digit" />
+        <input id="otp4" type="text" maxlength="1" class="otp-digit" />
+        <input id="otp5" type="text" maxlength="1" class="otp-digit" />
+        <input id="otp6" type="text" maxlength="1" class="otp-digit" />
+      </div>
+      <button onclick="verifyOtp()"
+        class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-gray-900 font-display font-bold text-sm tracking-widest uppercase shadow-[0_0_15px_rgba(0,242,254,0.3)] hover:shadow-[0_0_25px_rgba(0,242,254,0.5)] transition-all">
+        ✅ VERIFY & AUTHENTICATE
+      </button>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-[300] flex flex-col gap-2"></div>
+
+  <script type="module" src="/src/signin.ts"></script>
+</body>
+</html>
